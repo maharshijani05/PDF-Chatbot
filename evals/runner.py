@@ -52,8 +52,8 @@ def run_live_evaluation(dataset_path: str) -> None:
 
         # Delay to avoid rate limits
         if idx < len(data):
-            print("Waiting 30 seconds...\n")
-            time.sleep(30)
+            print("Waiting 5 seconds...\n")
+            time.sleep(5)
 
     print("----- SUMMARY -----")
     print(f"Total: {len(data)}")

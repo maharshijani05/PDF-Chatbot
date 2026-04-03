@@ -16,7 +16,7 @@ def load_pdf(file_path: str) -> list[Document]:
 
 
 def split_documents(documents: list[Document]) -> list[Document]:
-    splitter = RecursiveCharacterTextSplitter(chunk_size=700, chunk_overlap=150)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=200)
     return splitter.split_documents(documents)
 
 

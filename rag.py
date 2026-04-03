@@ -1,83 +1,83 @@
 from pathlib import Path
-from typing import List
 
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from config import VECTORSTORE_DIR, GOOGLE_API_KEY
 from ingest import load_vectorstore
 
 RAG_PROMPT = PromptTemplate(
-    template="""You are a helpful assistant.
+    template="""
+You are a strict retrieval-based QA system.
 
-Answer the question ONLY using the context below.
+Your job is to answer the question using ONLY the provided context.
+Do NOT use prior knowledge.
 
-IMPORTANT:
-- If the context contains multiple steps or methods, include ALL of them.
+====================
+RULES (MANDATORY)
+====================
+
+1. SOURCE OF TRUTH
+- Use ONLY the given context.
+- If the answer is not explicitly present, respond: "I don't know".
+
+2. COMPLETENESS
+- If multiple parts of the context contribute to the answer, include ALL of them.
 - Do NOT give partial answers.
-- Structure the answer clearly in points.
-- Ensure completeness over brevity.
 
-If the answer is not in the context, say "I don't know".
+3. NO HALLUCINATION
+- Do NOT infer, assume, or fabricate information.
+- If context is ambiguous or insufficient → "I don't know".
 
-Context:
+4. CONFLICT RESOLUTION
+- If context contains conflicting information:
+  - Report both versions.
+  - Do NOT choose arbitrarily.
+
+5. ANSWER STRUCTURE
+- Be clear and structured.
+- Use bullet points for multiple facts.
+- Keep it concise but complete.
+
+6. CITATIONS (CRITICAL)
+- Support every statement with context references.
+- Use format: [chunk_id or section reference if available].
+- If no chunk IDs exist, quote exact phrases.
+
+7. RELEVANCE FILTERING
+- Ignore irrelevant parts of the context.
+- Focus only on information needed to answer the question.
+
+8. NO EXTRA TEXT
+- Do NOT add explanations about your process.
+- Do NOT restate the question.
+
+====================
+CONTEXT
+====================
 {context}
 
-Question:
+====================
+QUESTION
+====================
 {question}
 
-Answer:
+====================
+ANSWER
+====================
 """,
     input_variables=["context", "question"],
 )
 
-embeddings = GoogleGenerativeAIEmbeddings(
-    model="models/gemini-embedding-001",
-    google_api_key=GOOGLE_API_KEY
-)
-
-def dot_product(a: List[float], b: List[float]) -> float:
-    return sum(x * y for x, y in zip(a, b))
-
-def rerank_docs(query: str, docs: List, top_k: int = 4) -> List:
-    query_emb = embeddings.embed_query(query)
-
-    scored = []
-    for doc in docs:
-        doc_emb = embeddings.embed_query(doc.page_content)
-        score = dot_product(query_emb, doc_emb)
-        scored.append((score, doc))
-
-    scored.sort(key=lambda x: x[0], reverse=True)
-    return [doc for _, doc in scored[:top_k]]
-
 def build_qa_chain(vectorstore_path: Path = VECTORSTORE_DIR):
-    vectorstore = load_vectorstore(vectorstore_path)
-
-    retriever = vectorstore.as_retriever(
-        search_type="mmr",
-        search_kwargs={"k": 10}
-    )
-
-    llm = ChatGoogleGenerativeAI(
-        model="gemini-2.5-flash",
-        temperature=0.3,
-        google_api_key=GOOGLE_API_KEY
-    )
-
-    def build_context(question: str) -> str:
-        docs = retriever.invoke(question)
-        docs = rerank_docs(question, docs)
-        return "\n\n".join(d.page_content for d in docs)
+    retriever = load_vectorstore(vectorstore_path).as_retriever(search_type="mmr",search_kwargs={"k": 6})
+    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.3, google_api_key=GOOGLE_API_KEY)
 
     return (
-        {
-            "context": build_context,
-            "question": RunnablePassthrough()
-        }
+        {"context": retriever | (lambda docs: "\n\n".join(d.page_content for d in docs)),
+         "question": RunnablePassthrough()}
         | RAG_PROMPT
         | llm
         | StrOutputParser()
