@@ -13,6 +13,18 @@
   },
   {
     "question": "How can I cook pie?",
+    "category": "adversarial"
+  },
+  {
+    "question": "What are the main challenges or problems discussed in the document?",
+    "category": "normal"
+  },
+  {
+    "question": "Who are the key stakeholders or participants mentioned in this document?",
+    "category": "normal"
+  },
+  {
+    "question": "What are the limitations or constraints mentioned in the document?",
     "category": "normal"
   }
 ]
