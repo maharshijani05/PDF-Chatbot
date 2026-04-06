@@ -28,7 +28,12 @@ def run_live_evaluation(dataset_path: str) -> None:
     failed = 0
 
     for idx, item in enumerate(data, start=1):
-        question = item["input"]
+        question = item.get("input") or item.get("question")
+
+        if not question:
+            print(f"[ERROR] Test {idx}: missing question/input field")
+            failed += 1
+            continue
 
         try:
             model_output = qa_chain.invoke(question)

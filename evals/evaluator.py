@@ -1,31 +1,36 @@
+import re
 from typing import List
-
-
-CORE_GROUPS: List[List[str]] = [
-    ["dataset", "data", "traces"],
-    ["error analysis", "analyze errors", "failure analysis"]
-]
-
-OPTIONAL_GROUPS: List[List[str]] = [
-    ["evaluator", "evaluation", "judge"],
-    ["llm-as-a-judge", "llm judge"],
-    ["regex", "code-based", "assertion"],
-    ["iteration", "refinement", "improve"]
-]
 
 
 def normalize(text: str) -> str:
     return text.lower()
 
 
-def matches_group(text: str, group: List[str]) -> bool:
-    return any(keyword in text for keyword in group)
+def has_answer(output: str) -> bool:
+    cleaned = output.strip()
+    return bool(cleaned) and len(cleaned.split()) >= 4
+
+
+def has_support_reference(output: str) -> bool:
+    patterns = [
+        r"\b(source|reference|citation)\b",
+        r"\baccording to\b",
+        r"\bas stated\b",
+        r"\bparagraph\b",
+        r"\bsentence\b",
+        r"\bsection\b",
+        r"\bpage\b",
+        r'\".+?\"',
+        r"'.+?'",
+    ]
+    return any(re.search(pattern, output, re.I) for pattern in patterns)
+
+
+def has_consistent_format(output: str) -> bool:
+    answer_match = re.search(r"answer\s*:\s*.+", output, re.I | re.S)
+    source_match = re.search(r"(source|reference)\s*:\s*.+", output, re.I | re.S)
+    return bool(answer_match and source_match)
 
 
 def evaluate_output(output: str) -> bool:
-    text = normalize(output)
-
-    core_ok = all(matches_group(text, g) for g in CORE_GROUPS)
-    optional_ok = any(matches_group(text, g) for g in OPTIONAL_GROUPS)
-
-    return core_ok and optional_ok
+    return has_answer(output) and has_support_reference(output) and has_consistent_format(output)

@@ -41,18 +41,21 @@ RULES (MANDATORY)
 - Use bullet points for multiple facts.
 - Keep it concise but complete.
 
-6. CITATIONS (CRITICAL)
-- Support every statement with context references.
-- Use format: [chunk_id or section reference if available].
-- If no chunk IDs exist, quote exact phrases.
-
-7. RELEVANCE FILTERING
+6. RELEVANCE FILTERING
 - Ignore irrelevant parts of the context.
 - Focus only on information needed to answer the question.
 
-8. NO EXTRA TEXT
+7. NO EXTRA TEXT
 - Do NOT add explanations about your process.
 - Do NOT restate the question.
+
+8. REQUIRED OUTPUT FORMAT
+- Use the exact structure:
+  Answer: <your answer>
+  Source: <context reference>
+- If the answer cannot be found in the context, reply only with:
+  Answer: I don't know
+  Source: N/A
 
 ====================
 CONTEXT

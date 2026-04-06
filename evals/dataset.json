@@ -1,32 +1,18 @@
 [
   {
-    "input": "What are the ways to perform eval testing?"
+    "question": "What is this pdf about?",
+    "category": "normal"
   },
   {
-    "input": "List methods for eval testing"
+    "question": "Summarize this document",
+    "category": "normal"
   },
   {
-    "input": "Give me eval strategies"
+    "question": "Identify one key action or next step described in the document.",
+    "category": "normal"
   },
   {
-    "input": "How can eval testing be done?"
-  },
-  {
-    "input": "Explain eval testing methods"
-  },
-  {
-    "input": "Describe eval workflows"
-  },
-  {
-    "input": "What techniques are used in eval testing?"
-  },
-  {
-    "input": "How do you design evals for LLMs?"
-  },
-  {
-    "input": "What is the process of evaluation in LLM systems?"
-  },
-  {
-    "input": "Explain the evaluation pipeline for LLM applications"
+    "question": "How can I cook pie?",
+    "category": "normal"
   }
 ]
