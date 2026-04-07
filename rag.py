@@ -74,14 +74,25 @@ ANSWER
     input_variables=["context", "question"],
 )
 
-def build_qa_chain(vectorstore_path: Path = VECTORSTORE_DIR):
-    retriever = load_vectorstore(vectorstore_path).as_retriever(search_type="mmr",search_kwargs={"k": 6})
-    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.3, google_api_key=GOOGLE_API_KEY)
+def build_retriever(vectorstore_path: Path = VECTORSTORE_DIR):
+    return load_vectorstore(vectorstore_path).as_retriever(search_type="mmr", search_kwargs={"k": 6})
 
+
+def invoke_with_context(question: str, retriever) -> tuple[str, list[str]]:
+    """Run the RAG chain and return (answer, contexts) from the same retrieval."""
+    docs = retriever.invoke(question)
+    context = "\n\n".join(d.page_content for d in docs)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.3, google_api_key=GOOGLE_API_KEY)
+    answer = (RAG_PROMPT | llm | StrOutputParser()).invoke({"context": context, "question": question})
+    return answer, [doc.page_content for doc in docs]
+
+
+def build_qa_chain(vectorstore_path: Path = VECTORSTORE_DIR):
+    retriever = build_retriever(vectorstore_path)
     return (
         {"context": retriever | (lambda docs: "\n\n".join(d.page_content for d in docs)),
          "question": RunnablePassthrough()}
         | RAG_PROMPT
-        | llm
+        | ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.3, google_api_key=GOOGLE_API_KEY)
         | StrOutputParser()
     )

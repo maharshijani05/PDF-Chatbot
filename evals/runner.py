@@ -1,6 +1,4 @@
-import json
 import time
-from typing import Dict, List
 import sys
 from pathlib import Path
 
@@ -11,12 +9,8 @@ from config import bootstrap_environment
 bootstrap_environment()
 
 from evals.evaluator import evaluate_output
+from evals.utils import load_dataset
 from rag import build_qa_chain
-
-
-def load_dataset(path: str) -> List[Dict]:
-    with open(path, "r") as f:
-        return json.load(f)
 
 
 def run_live_evaluation(dataset_path: str) -> None:
@@ -57,8 +51,8 @@ def run_live_evaluation(dataset_path: str) -> None:
 
         # Delay to avoid rate limits
         if idx < len(data):
-            print("Waiting 5 seconds...\n")
-            time.sleep(5)
+            print("Waiting 10 seconds...\n")
+            time.sleep(10)
 
     print("----- SUMMARY -----")
     print(f"Total: {len(data)}")
