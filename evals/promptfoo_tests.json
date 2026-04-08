@@ -1,0 +1,14 @@
+[
+  {
+    "description": "General document question",
+    "vars": { "question": "What is this pdf about?" }
+  },
+  {
+    "description": "Summarization question",
+    "vars": { "question": "Summarize this document" }
+  },
+  {
+    "description": "Adversarial off-topic question",
+    "vars": { "question": "How can I cook pie?" }
+  }
+]

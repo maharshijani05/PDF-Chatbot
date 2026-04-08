@@ -1,73 +1,39 @@
+description: RAG chatbot evaluation via LLM judge
+
+evaluateOptions:
+  maxConcurrency: 1  # prevents rate limit bursts on free tier
+
 prompts:
-  - id: llm_judge
-    raw: |
-      You are an expert evaluator for a RAG system.
-
-      Evaluate the following answer on 5 binary criteria (PASS or FAIL):
-
-      1. **Answer Quality**: Does the answer directly address the question?
-      2. **Source Attribution**: Does the answer include a source reference?
-      3. **Hallucination Check**: Does the answer stick to document content only?
-      4. **Format Consistency**: Does it follow a structured Answer/Source format?
-      5. **Completeness**: Does it fully address the question, or say "I don't know"?
-
-      QUESTION:
-      {{question}}
-
-      ANSWER:
-      {{answer}}
-
-      Respond with ONLY a JSON object, no markdown or extra text:
-      {
-        "answer_quality": "PASS" or "FAIL",
-        "source_attribution": "PASS" or "FAIL",
-        "hallucination_check": "PASS" or "FAIL",
-        "format_consistency": "PASS" or "FAIL",
-        "completeness": "PASS" or "FAIL",
-        "failed_criteria": [],
-        "notes": ""
-      }
+  - "{{question}}"
 
 providers:
-  - id: google:gemini-2.5-flash
+  - id: python:evals/promptfoo_provider.py
+    label: rag_strict
     config:
-      temperature: 0.3
+      variant: strict
 
-tests:
-  - description: Well-formed RAG answer should pass all criteria
-    vars:
-      question: What is the notice period mentioned in the offer letter?
-      answer: |
-        Answer: The notice period is 30 days as stated in the employment terms.
-        Source: Section 4 of the offer letter.
-    assert:
-      - type: contains
-        value: '"answer_quality": "PASS"'
-      - type: not-contains
-        value: "```"
-      - type: is-json
+  - id: python:evals/promptfoo_provider.py
+    label: rag_concise
+    config:
+      variant: concise
 
-  - description: Off-topic answer should fail hallucination check
-    vars:
-      question: How do I cook pasta?
-      answer: |
-        Answer: Boil water, add pasta, cook for 10 minutes.
-        Source: Common knowledge.
-    assert:
-      - type: contains
-        value: '"hallucination_check": "FAIL"'
-      - type: not-contains
-        value: "```"
-      - type: is-json
+tests: file://evals/promptfoo_tests.json
 
-  - description: Missing source should fail source attribution
-    vars:
-      question: What is the joining date?
-      answer: |
-        Answer: The joining date is 1st January 2025.
-    assert:
-      - type: contains
-        value: '"source_attribution": "FAIL"'
-      - type: not-contains
-        value: "```"
-      - type: is-json
+defaultTest:
+  assert:
+    - type: is-json
+      description: Judge output must be valid JSON
+    - type: contains
+      value: '"passed": true'
+      description: All judge criteria must pass
+    - type: not-contains
+      value: "```"
+      description: No markdown fences in output
+    - type: llm-rubric
+      value: >
+        The "answer" field should provide a helpful, accurate response to the
+        question without hallucinating information not in the source document.
+        If the question cannot be answered from the document, the answer must
+        clearly state "I don't know". The response must not fabricate facts.
+      provider: google:gemini-2.5-flash
+      description: Subjective helpfulness and non-hallucination check

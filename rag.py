@@ -74,6 +74,24 @@ ANSWER
     input_variables=["context", "question"],
 )
 
+RAG_PROMPT_CONCISE = PromptTemplate(
+    template="""You are a helpful assistant. Answer the question using only the provided context.
+If the answer is not in the context, reply with "I don't know".
+Keep your answer brief and direct.
+
+Context:
+{context}
+
+Question:
+{question}
+
+Answer: <your answer>
+Source: <context reference or N/A>
+""",
+    input_variables=["context", "question"],
+)
+
+
 def build_retriever(vectorstore_path: Path = VECTORSTORE_DIR):
     return load_vectorstore(vectorstore_path).as_retriever(search_type="mmr", search_kwargs={"k": 6})
 
@@ -87,12 +105,13 @@ def invoke_with_context(question: str, retriever) -> tuple[str, list[str]]:
     return answer, [doc.page_content for doc in docs]
 
 
-def build_qa_chain(vectorstore_path: Path = VECTORSTORE_DIR):
+def build_qa_chain(vectorstore_path: Path = VECTORSTORE_DIR, variant: str = "strict"):
+    prompt = RAG_PROMPT_CONCISE if variant == "concise" else RAG_PROMPT
     retriever = build_retriever(vectorstore_path)
     return (
         {"context": retriever | (lambda docs: "\n\n".join(d.page_content for d in docs)),
          "question": RunnablePassthrough()}
-        | RAG_PROMPT
+        | prompt
         | ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.3, google_api_key=GOOGLE_API_KEY)
         | StrOutputParser()
     )
