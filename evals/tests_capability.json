@@ -2,6 +2,7 @@
   {
     "description": "Document overview: can the RAG synthesise what the document is about?",
     "vars": { "question": "What is this pdf about?" },
+    "providers": ["rag_strict_capability", "rag_concise_capability"],
     "assert": [
       {
         "type": "is-json",
@@ -23,6 +24,7 @@
   {
     "description": "Summarisation: can the RAG cover the full document with limited chunks?",
     "vars": { "question": "Summarize this document" },
+    "providers": ["rag_strict_capability", "rag_concise_capability"],
     "assert": [
       {
         "type": "is-json",
@@ -44,6 +46,7 @@
   {
     "description": "Action extraction: can the RAG reason about intent and next steps?",
     "vars": { "question": "Identify one key action or next step described in the document." },
+    "providers": ["rag_strict_capability", "rag_concise_capability"],
     "assert": [
       {
         "type": "is-json",

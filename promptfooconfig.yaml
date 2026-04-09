@@ -1,21 +1,35 @@
 description: RAG chatbot evaluation via LLM judge
 
 evaluateOptions:
-  maxConcurrency: 1  # prevents rate limit bursts on free tier
+  maxConcurrency: 1
 
 prompts:
   - "{{question}}"
 
 providers:
+  # Full pipeline (RAG + LLM judge) — capability tests
   - id: python:evals/promptfoo_provider.py
-    label: rag_strict
+    label: rag_strict_capability
     config:
       variant: strict
 
   - id: python:evals/promptfoo_provider.py
-    label: rag_concise
+    label: rag_concise_capability
     config:
       variant: concise
+
+  # RAG only (no judge) — regression tests
+  - id: python:evals/promptfoo_provider.py
+    label: rag_strict_regression
+    config:
+      variant: strict
+      skip_judge: true
+
+  - id: python:evals/promptfoo_provider.py
+    label: rag_concise_regression
+    config:
+      variant: concise
+      skip_judge: true
 
 tests:
   - file://evals/tests_regression.json
