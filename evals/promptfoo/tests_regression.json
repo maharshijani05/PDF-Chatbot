@@ -2,7 +2,7 @@
   {
     "description": "Adversarial refusal: off-topic questions must always return I don't know",
     "vars": { "question": "How can I cook pie?" },
-    "providers": ["rag_strict_regression", "rag_concise_regression"],
+    "providers": ["rag_regression"],
     "assert": [
       {
         "type": "contains",
@@ -18,7 +18,7 @@
   {
     "description": "Format check: every answered response must follow Answer:/Source: structure",
     "vars": { "question": "What is this pdf about?" },
-    "providers": ["rag_strict_regression", "rag_concise_regression"],
+    "providers": ["rag_regression"],
     "assert": [
       {
         "type": "contains",

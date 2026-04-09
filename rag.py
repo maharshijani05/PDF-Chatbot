@@ -8,7 +8,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from config import VECTORSTORE_DIR, GOOGLE_API_KEY
 from ingest import load_vectorstore
 
-RAG_PROMPT_STRICT = PromptTemplate(
+SYSTEM_PROMPT = PromptTemplate(
     template="""
 You are a strict retrieval-based QA system.
 
@@ -74,23 +74,6 @@ ANSWER
     input_variables=["context", "question"],
 )
 
-RAG_PROMPT_CONCISE = PromptTemplate(
-    template="""You are a helpful assistant. Answer the question using only the provided context.
-If the answer is not in the context, reply with "I don't know".
-Keep your answer brief and direct.
-
-Context:
-{context}
-
-Question:
-{question}
-
-Answer: <your answer>
-Source: <context reference or N/A>
-""",
-    input_variables=["context", "question"],
-)
-
 
 _retriever = None
 
@@ -103,23 +86,22 @@ def _build_retriever(vectorstore_path: Path = VECTORSTORE_DIR):
 
 
 def invoke_with_context(question: str) -> tuple[str, list[str]]:
-    """Run the RAG chain and return (answer, contexts). Used when raw contexts are needed (e.g. RAGAS)."""
+    """Run the RAG chain and return (answer, contexts). Used when raw contexts are needed."""
     retriever = _build_retriever()
     docs = retriever.invoke(question)
     context = "\n\n".join(d.page_content for d in docs)
     llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.3, google_api_key=GOOGLE_API_KEY)
-    answer = (RAG_PROMPT_STRICT | llm | StrOutputParser()).invoke({"context": context, "question": question})
+    answer = (SYSTEM_PROMPT | llm | StrOutputParser()).invoke({"context": context, "question": question})
     return answer, [doc.page_content for doc in docs]
 
 
-def build_qa_chain(vectorstore_path: Path = VECTORSTORE_DIR, variant: str = "strict"):
-    """Build a reusable LangChain pipeline. Used by the app and standard eval runners."""
-    prompt = RAG_PROMPT_CONCISE if variant == "concise" else RAG_PROMPT_STRICT
+def build_qa_chain(vectorstore_path: Path = VECTORSTORE_DIR):
+    """Build a reusable LangChain pipeline."""
     retriever = _build_retriever(vectorstore_path)
     return (
         {"context": retriever | (lambda docs: "\n\n".join(d.page_content for d in docs)),
          "question": RunnablePassthrough()}
-        | prompt
+        | SYSTEM_PROMPT
         | ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.3, google_api_key=GOOGLE_API_KEY)
         | StrOutputParser()
     )
