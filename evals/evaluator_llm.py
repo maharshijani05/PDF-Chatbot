@@ -1,6 +1,5 @@
 import sys
 import json
-import time
 from pathlib import Path
 from typing import Dict
 
@@ -12,8 +11,7 @@ bootstrap_environment()
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
-from rag import build_qa_chain
-from evals.utils import load_dataset, strip_markdown_json
+from evals.utils import strip_markdown_json
 
 
 EVALUATION_PROMPT = ChatPromptTemplate.from_template("""
@@ -73,61 +71,3 @@ def evaluate_with_llm(question: str, answer: str) -> tuple[bool, Dict]:
             "failed_criteria": ["evaluation_error"],
             "notes": f"Evaluation error: {e}",
         }
-
-
-def run_llm_judge_evaluation(dataset_path: str) -> None:
-    data = load_dataset(dataset_path)
-    qa_chain = build_qa_chain()
-
-    passed = 0
-    failed = 0
-
-    print("=" * 80)
-    print("LLM-AS-JUDGE EVALUATION")
-    print("=" * 80)
-
-    for idx, item in enumerate(data, start=1):
-        question = item.get("question", "")
-        if not question:
-            print(f"[SKIP] Test {idx}: No question")
-            continue
-
-        print(f"\n[TEST {idx}] {question}")
-        print("Waiting 10 seconds...")
-        time.sleep(10)
-
-        try:
-            answer = qa_chain.invoke(question)
-            print(f"\n  Answer:\n  {answer}")
-
-            all_pass, criteria = evaluate_with_llm(question, answer)
-            status = "PASS" if all_pass else "FAIL"
-
-            if all_pass:
-                passed += 1
-            else:
-                failed += 1
-
-            print(f"  [{status}]")
-            for criterion, value in criteria.items():
-                if criterion not in ("failed_criteria", "notes"):
-                    print(f"    [{'✓' if value == 'PASS' else '✗'}] {criterion.replace('_', ' ').title()}: {value}")
-
-            if criteria.get("failed_criteria"):
-                print(f"  Failed: {', '.join(criteria['failed_criteria'])}")
-            if criteria.get("notes"):
-                print(f"  Notes: {criteria['notes']}")
-
-        except Exception as e:
-            print(f"[ERROR] Test {idx}: {e}")
-            failed += 1
-
-    print("\n" + "=" * 80)
-    print("SUMMARY")
-    print("=" * 80)
-    total = passed + failed
-    print(f"Passed: {passed}/{total} ({passed / total * 100:.1f}%)" if total else "No tests ran.")
-
-
-if __name__ == "__main__":
-    run_llm_judge_evaluation("evals/dataset.json")

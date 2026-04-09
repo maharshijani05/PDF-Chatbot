@@ -1,11 +1,4 @@
-import json
 import re
-from typing import Dict, List
-
-
-def load_dataset(path: str) -> List[Dict]:
-    with open(path) as f:
-        return json.load(f)
 
 
 def strip_markdown_json(text: str) -> str:
