@@ -8,32 +8,32 @@ prompts:
 
 providers:
   # Full pipeline (RAG + LLM judge) — capability tests
-  - id: python:evals/promptfoo_provider.py
+  - id: python:evals/promptfoo/provider.py
     label: rag_strict_capability
     config:
       variant: strict
 
-  - id: python:evals/promptfoo_provider.py
+  - id: python:evals/promptfoo/provider.py
     label: rag_concise_capability
     config:
       variant: concise
 
   # RAG only (no judge) — regression tests
-  - id: python:evals/promptfoo_provider.py
+  - id: python:evals/promptfoo/provider.py
     label: rag_strict_regression
     config:
       variant: strict
       skip_judge: true
 
-  - id: python:evals/promptfoo_provider.py
+  - id: python:evals/promptfoo/provider.py
     label: rag_concise_regression
     config:
       variant: concise
       skip_judge: true
 
 tests:
-  - file://evals/tests_regression.json
-  - file://evals/tests_capability.json
+  - file://evals/promptfoo/tests_regression.json
+  - file://evals/promptfoo/tests_capability.json
 
 defaultTest:
   assert:

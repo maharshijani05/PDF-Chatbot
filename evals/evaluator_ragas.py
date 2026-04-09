@@ -11,7 +11,7 @@ sys.path.insert(0, str(ROOT_DIR))
 from config import bootstrap_environment, GOOGLE_API_KEY
 bootstrap_environment()
 
-from rag import build_retriever, invoke_with_context
+from rag import invoke_with_context
 from evals.utils import load_dataset, strip_markdown_json
 from ragas import evaluate
 from ragas.metrics import faithfulness, answer_relevancy
@@ -52,19 +52,17 @@ class _RateLimitedGemini(ChatGoogleGenerativeAI):
 
 def collect_rag_data(dataset_path: str) -> Dataset:
     data = load_dataset(dataset_path)
-    retriever = build_retriever()
-
     questions, answers, contexts = [], [], []
 
     for idx, item in enumerate(data):
-        question = item.get("input") or item.get("question")
+        question = item.get("question")
         if not question:
             continue
 
         print(f"Waiting 10 seconds before question {idx + 1}...")
         time.sleep(10)
 
-        answer, context_list = invoke_with_context(question, retriever)
+        answer, context_list = invoke_with_context(question)
 
         questions.append(question)
         answers.append(answer)
