@@ -1,6 +1,7 @@
 [
   {
     "description": "Adversarial refusal: off-topic questions must always return I don't know",
+    "threshold": 1.0,
     "vars": { "question": "How can I cook pie?" },
     "providers": ["rag_regression"],
     "assert": [
@@ -17,6 +18,7 @@
   },
   {
     "description": "Format check: every answered response must follow Answer:/Source: structure",
+    "threshold": 1.0,
     "vars": { "question": "What is this pdf about?" },
     "providers": ["rag_regression"],
     "assert": [

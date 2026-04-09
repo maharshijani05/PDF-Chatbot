@@ -1,6 +1,7 @@
 [
   {
     "description": "Document overview: can the RAG synthesise what the document is about?",
+    "threshold": 0.5,
     "vars": { "question": "What is this pdf about?" },
     "providers": ["rag_capability"],
     "assert": [
@@ -23,6 +24,7 @@
   },
   {
     "description": "Summarisation: can the RAG cover the full document with limited chunks?",
+    "threshold": 0.5,
     "vars": { "question": "Summarize this document" },
     "providers": ["rag_capability"],
     "assert": [
@@ -45,6 +47,7 @@
   },
   {
     "description": "Action extraction: can the RAG reason about intent and next steps?",
+    "threshold": 0.5,
     "vars": { "question": "Identify one key action or next step described in the document." },
     "providers": ["rag_capability"],
     "assert": [
