@@ -19,17 +19,16 @@ from evals.utils import load_dataset, strip_markdown_json
 EVALUATION_PROMPT = ChatPromptTemplate.from_template("""
 You are an expert evaluator for a RAG (Retrieval-Augmented Generation) system.
 
-Evaluate the following answer on 5 binary criteria (PASS or FAIL):
+Evaluate the following answer on 3 binary criteria (PASS or FAIL).
+Note: format and source attribution are checked separately via deterministic string checks.
 
-1. **Answer Quality**: Does the answer directly address the question? Is it relevant and substantive? If the answer is not available, it should be a clear "I don't know" without irrelevant information.
+1. **Answer Quality**: Does the answer directly address the question? Is it relevant and substantive?
+   If the answer is not available, it should be a clear "I don't know" without irrelevant information.
 
-2. **Source Attribution**: Does the answer include a source reference (e.g., "Source:", "According to...", quotes, page references)?
+2. **Hallucination Check**: Does the answer stick exclusively to document content without introducing
+   false or fabricated information?
 
-3. **Hallucination Check**: Does the answer stick exclusively to document content without introducing false or fabricated information?
-
-4. **Format Consistency**: Does the answer follow a structured format with clear Answer and Source sections?
-
-5. **Completeness**: Does the answer fully address the question if relevant, otherwise "I don't know"?
+3. **Completeness**: Does the answer fully address the question if relevant, otherwise "I don't know"?
 
 QUESTION:
 {question}
@@ -40,9 +39,7 @@ ANSWER:
 Respond with ONLY a JSON object, no markdown or extra text:
 {{
   "answer_quality": "PASS" or "FAIL",
-  "source_attribution": "PASS" or "FAIL",
   "hallucination_check": "PASS" or "FAIL",
-  "format_consistency": "PASS" or "FAIL",
   "completeness": "PASS" or "FAIL",
   "failed_criteria": ["list of criteria that failed, empty if all pass"],
   "notes": "<brief explanation of failures if any>"
@@ -60,9 +57,7 @@ def evaluate_with_llm(question: str, answer: str) -> tuple[bool, Dict]:
 
         criteria = {
             "answer_quality": result.get("answer_quality", "FAIL"),
-            "source_attribution": result.get("source_attribution", "FAIL"),
             "hallucination_check": result.get("hallucination_check", "FAIL"),
-            "format_consistency": result.get("format_consistency", "FAIL"),
             "completeness": result.get("completeness", "FAIL"),
         }
         all_pass = all(v == "PASS" for v in criteria.values())
@@ -73,9 +68,7 @@ def evaluate_with_llm(question: str, answer: str) -> tuple[bool, Dict]:
     except Exception as e:
         return False, {
             "answer_quality": "FAIL",
-            "source_attribution": "FAIL",
             "hallucination_check": "FAIL",
-            "format_consistency": "FAIL",
             "completeness": "FAIL",
             "failed_criteria": ["evaluation_error"],
             "notes": f"Evaluation error: {e}",

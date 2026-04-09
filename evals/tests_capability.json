@@ -1,0 +1,65 @@
+[
+  {
+    "description": "Document overview: can the RAG synthesise what the document is about?",
+    "vars": { "question": "What is this pdf about?" },
+    "assert": [
+      {
+        "type": "is-json",
+        "description": "Judge output must be valid JSON"
+      },
+      {
+        "type": "contains",
+        "value": "\"passed\": true",
+        "description": "All judge criteria must pass"
+      },
+      {
+        "type": "llm-rubric",
+        "value": "The \"answer\" field should provide a helpful, accurate response to the question without hallucinating information not in the source document. If the question cannot be answered from the document, the answer must clearly state \"I don't know\". The response must not fabricate facts.",
+        "provider": "google:gemini-2.5-flash",
+        "description": "Subjective helpfulness and non-hallucination check"
+      }
+    ]
+  },
+  {
+    "description": "Summarisation: can the RAG cover the full document with limited chunks?",
+    "vars": { "question": "Summarize this document" },
+    "assert": [
+      {
+        "type": "is-json",
+        "description": "Judge output must be valid JSON"
+      },
+      {
+        "type": "contains",
+        "value": "\"passed\": true",
+        "description": "All judge criteria must pass"
+      },
+      {
+        "type": "llm-rubric",
+        "value": "The \"answer\" field should provide a helpful, accurate response to the question without hallucinating information not in the source document. If the question cannot be answered from the document, the answer must clearly state \"I don't know\". The response must not fabricate facts.",
+        "provider": "google:gemini-2.5-flash",
+        "description": "Subjective helpfulness and non-hallucination check"
+      }
+    ]
+  },
+  {
+    "description": "Action extraction: can the RAG reason about intent and next steps?",
+    "vars": { "question": "Identify one key action or next step described in the document." },
+    "assert": [
+      {
+        "type": "is-json",
+        "description": "Judge output must be valid JSON"
+      },
+      {
+        "type": "contains",
+        "value": "\"passed\": true",
+        "description": "All judge criteria must pass"
+      },
+      {
+        "type": "llm-rubric",
+        "value": "The \"answer\" field should provide a helpful, accurate response to the question without hallucinating information not in the source document. If the question cannot be answered from the document, the answer must clearly state \"I don't know\". The response must not fabricate facts.",
+        "provider": "google:gemini-2.5-flash",
+        "description": "Subjective helpfulness and non-hallucination check"
+      }
+    ]
+  }
+]

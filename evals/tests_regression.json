@@ -1,0 +1,37 @@
+[
+  {
+    "description": "Adversarial refusal: off-topic questions must always return I don't know",
+    "vars": { "question": "How can I cook pie?", "skip_judge": "true" },
+    "assert": [
+      {
+        "type": "contains",
+        "value": "I don't know",
+        "description": "Must refuse off-topic questions"
+      },
+      {
+        "type": "is-json",
+        "description": "Output must be valid JSON"
+      }
+    ]
+  },
+  {
+    "description": "Format check: every answered response must follow Answer:/Source: structure",
+    "vars": { "question": "What is this pdf about?", "skip_judge": "true" },
+    "assert": [
+      {
+        "type": "contains",
+        "value": "Answer:",
+        "description": "Response must include Answer: prefix"
+      },
+      {
+        "type": "contains",
+        "value": "Source:",
+        "description": "Response must include Source: prefix"
+      },
+      {
+        "type": "is-json",
+        "description": "Output must be valid JSON"
+      }
+    ]
+  }
+]

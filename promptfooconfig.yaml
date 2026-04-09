@@ -17,23 +17,12 @@ providers:
     config:
       variant: concise
 
-tests: file://evals/promptfoo_tests.json
+tests:
+  - file://evals/tests_regression.json
+  - file://evals/tests_capability.json
 
 defaultTest:
   assert:
-    - type: is-json
-      description: Judge output must be valid JSON
-    - type: contains
-      value: '"passed": true'
-      description: All judge criteria must pass
     - type: not-contains
       value: "```"
       description: No markdown fences in output
-    - type: llm-rubric
-      value: >
-        The "answer" field should provide a helpful, accurate response to the
-        question without hallucinating information not in the source document.
-        If the question cannot be answered from the document, the answer must
-        clearly state "I don't know". The response must not fabricate facts.
-      provider: google:gemini-2.5-flash
-      description: Subjective helpfulness and non-hallucination check
