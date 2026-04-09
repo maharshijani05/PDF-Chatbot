@@ -1,13 +1,5 @@
-import sys
 import json
-from pathlib import Path
 from typing import Dict
-
-ROOT_DIR = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT_DIR))
-
-from config import bootstrap_environment
-bootstrap_environment()
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate

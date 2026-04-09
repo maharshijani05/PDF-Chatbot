@@ -75,29 +75,8 @@ ANSWER
 )
 
 
-_retriever = None
-
-
-def _build_retriever(vectorstore_path: Path = VECTORSTORE_DIR):
-    global _retriever
-    if _retriever is None:
-        _retriever = load_vectorstore(vectorstore_path).as_retriever(search_type="mmr", search_kwargs={"k": 6})
-    return _retriever
-
-
-def invoke_with_context(question: str) -> tuple[str, list[str]]:
-    """Run the RAG chain and return (answer, contexts). Used when raw contexts are needed."""
-    retriever = _build_retriever()
-    docs = retriever.invoke(question)
-    context = "\n\n".join(d.page_content for d in docs)
-    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.3, google_api_key=GOOGLE_API_KEY)
-    answer = (SYSTEM_PROMPT | llm | StrOutputParser()).invoke({"context": context, "question": question})
-    return answer, [doc.page_content for doc in docs]
-
-
 def build_qa_chain(vectorstore_path: Path = VECTORSTORE_DIR):
-    """Build a reusable LangChain pipeline."""
-    retriever = _build_retriever(vectorstore_path)
+    retriever = load_vectorstore(vectorstore_path).as_retriever(search_type="mmr", search_kwargs={"k": 6})
     return (
         {"context": retriever | (lambda docs: "\n\n".join(d.page_content for d in docs)),
          "question": RunnablePassthrough()}

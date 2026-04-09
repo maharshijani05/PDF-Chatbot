@@ -7,4 +7,3 @@ pypdf
 faiss-cpu
 python-dotenv
 streamlit
-ragas
